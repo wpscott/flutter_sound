@@ -25,11 +25,11 @@ import 'dart:io';
 import 'dart:io' show Platform;
 
 import 'package:flutter/services.dart';
-import 'package:flutter_sound/flutter_sound.dart';
+import 'package:flutter_sound_recorder/flutter_sound_recorder.dart';
 import 'package:path_provider/path_provider.dart' show getTemporaryDirectory;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:flutter_sound/src/session.dart';
+import 'package:flutter_sound_recorder/src/session.dart';
 
 enum RecorderState {
   isStopped,
@@ -174,7 +174,7 @@ class FlutterSoundRecorder extends Session {
       throw (_InitializationInProgress());
     }
     if (isInited != Initialized.fullyInitialized) {
-      throw (_notOpen());
+      throw (_NotOpen());
     }
 
     bool result;
@@ -196,11 +196,10 @@ class FlutterSoundRecorder extends Session {
     return result;
   }
 
-  Future<void> _setRecorderCallback()  {
+  void _setRecorderCallback()  {
     if (_recorderController == null) {
       _recorderController = StreamController.broadcast();
     }
-
   }
 
   void _removeRecorderCallback() {
@@ -223,7 +222,7 @@ class FlutterSoundRecorder extends Session {
       throw (_InitializationInProgress());
     }
     if (isInited != Initialized.fullyInitialized) {
-      throw (_notOpen());
+      throw (_NotOpen());
     }
     await invokeMethod('setSubscriptionDuration', <String, dynamic>{
       'duration': duration.inMilliseconds,
@@ -247,8 +246,8 @@ class FlutterSoundRecorder extends Session {
 
   Future<void> startRecorder( {
     Codec codec = Codec.defaultCodec,
-    String toFile = null,
-    Stream toStream = null,
+    String toFile,
+    Stream toStream,
     int sampleRate = 16000,
     int numChannels = 1,
     int bitRate = 16000,
@@ -258,7 +257,7 @@ class FlutterSoundRecorder extends Session {
       throw (_InitializationInProgress());
     }
     if (isInited != Initialized.fullyInitialized) {
-      throw (_notOpen());
+      throw (_NotOpen());
     }
     // Request Microphone permission if needed
     /*
@@ -321,34 +320,14 @@ class FlutterSoundRecorder extends Session {
       throw (_InitializationInProgress());
     }
     if (isInited != Initialized.fullyInitialized) {
-      throw (_notOpen());
+      throw (_NotOpen());
     }
-    await invokeMethod('stopRecorder', <String, dynamic>{}) as String;
+    await invokeMethod('stopRecorder', <String, dynamic>{});
 
     recorderState = RecorderState.isStopped;
 
     if (isOggOpus) {
-      // delete the target if it exists
-      // (ffmpeg gives an error if the output file already exists)
-      File f = File(savedUri);
-      if (f.existsSync()) 
-        await f.delete();
-      // The following ffmpeg instruction re-encode the Apple CAF to OPUS.
-      // Unfortunately we cannot just remix the OPUS data,
-      // because Apple does not set the "extradata" in its private OPUS format.
-      // It will be good if we can improve this...
-      int rc = await flutterSoundHelper.executeFFmpegWithArguments([
-        '-loglevel',
-        'error',
-        '-y',
-        '-i',
-        tmpUri,
-        '-c:a',
-        'libopus',
-        savedUri,
-      ]); // remux CAF to OGG
-      if (rc != 0) return null;
-      return savedUri;
+      return null;
     }
   }
 
@@ -362,7 +341,7 @@ class FlutterSoundRecorder extends Session {
       throw (_InitializationInProgress());
     }
     if (isInited != Initialized.fullyInitialized) {
-      throw (_notOpen());
+      throw (_NotOpen());
     }
     await invokeMethod('setAudioFocus', <String, dynamic>{'focus':focus.index, 'category': category.index, 'mode': mode.index, 'device':device.index});
   }
@@ -373,9 +352,9 @@ class FlutterSoundRecorder extends Session {
       throw (_InitializationInProgress());
     }
     if (isInited != Initialized.fullyInitialized) {
-      throw (_notOpen());
+      throw (_NotOpen());
     }
-    await invokeMethod('pauseRecorder', <String, dynamic>{}) as String;
+    await invokeMethod('pauseRecorder', <String, dynamic>{});
     recorderState = RecorderState.isPaused;
   }
 
@@ -384,9 +363,9 @@ class FlutterSoundRecorder extends Session {
       throw (_InitializationInProgress());
     }
     if (isInited != Initialized.fullyInitialized) {
-      throw (_notOpen());
+      throw (_NotOpen());
     }
-    await invokeMethod('resumeRecorder', <String, dynamic>{}) as String;
+    await invokeMethod('resumeRecorder', <String, dynamic>{});
     recorderState = RecorderState.isRecording;
   }
 }
@@ -447,8 +426,8 @@ class _InitializationInProgress implements Exception {
 }
 
 
-class _notOpen implements Exception {
-  _notOpen() {
+class _NotOpen implements Exception {
+  _NotOpen() {
     print('Audio session is not open');
   }
 }

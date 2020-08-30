@@ -1,4 +1,4 @@
-name: flutter_sound
+name: flutter_sound_recorder
 version: 5.1.1
 description: Flutter plugin that relates to sound like audio and recorder.
 #author: dooboolab<dooboolab@gmail.com>
@@ -13,7 +13,6 @@ dependencies:
   recase: ^2.0.1
   uuid: ^2.0.4
   provider: ^4.1.0
-  flutter_spinkit: ^4.0.0
   path: ">=1.0.0 <2.0.0"
   synchronized: ^2.2.0
   flutter:
@@ -38,7 +37,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.dooboolab.fluttersound
+        package: com.dooboolab.fluttersoundrecorder
         pluginClass: Flauto
       ios:
         pluginClass: Flauto
